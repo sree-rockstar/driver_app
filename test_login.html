@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Login</title>
+</head>
+<body>
+    <h1>Test PR TRAVELS Login</h1>
+    
+    <h2>Step 1: Check Mobile</h2>
+    <button onclick="checkMobile()">Check Mobile 8884441998</button>
+    <pre id="checkResult"></pre>
+    
+    <h2>Step 2: Login with MPIN</h2>
+    <button onclick="loginWithMpin()">Login with MPIN 1359</button>
+    <pre id="loginResult"></pre>
+    
+    <h2>Step 3: Get Current User</h2>
+    <button onclick="getCurrentUser()">Get Current User</button>
+    <pre id="userResult"></pre>
+
+    <script>
+        const API_URL = 'http://localhost:8000/api/v1';
+        let token = '';
+
+        async function checkMobile() {
+            const formData = new FormData();
+            formData.append('mobile_number', '8884441998');
+            
+            try {
+                const response = await fetch(`${API_URL}/auth/check-mobile`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                document.getElementById('checkResult').textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                document.getElementById('checkResult').textContent = 'Error: ' + error;
+            }
+        }
+
+        async function loginWithMpin() {
+            const formData = new FormData();
+            formData.append('mobile_number', '8884441998');
+            formData.append('mpin', '1359');
+            
+            try {
+                const response = await fetch(`${API_URL}/auth/login`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                token = data.access_token;
+                document.getElementById('loginResult').textContent = JSON.stringify(data, null, 2);
+                console.log('Token received:', token);
+            } catch (error) {
+                document.getElementById('loginResult').textContent = 'Error: ' + error;
+            }
+        }
+
+        async function getCurrentUser() {
+            if (!token) {
+                document.getElementById('userResult').textContent = 'Please login first!';
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/users/me`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                const data = await response.json();
+                document.getElementById('userResult').textContent = JSON.stringify(data, null, 2);
+                console.log('User data:', data);
+                console.log('User role:', data.role);
+            } catch (error) {
+                document.getElementById('userResult').textContent = 'Error: ' + error;
+            }
+        }
+    </script>
+</body>
+</html>
+
