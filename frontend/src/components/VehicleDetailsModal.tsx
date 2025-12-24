@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { 
   X, Car, Battery, Fuel, MapPin, Calendar, User, 
-  FileText, Image, Wrench, DollarSign, Zap, TrendingUp
+  FileText, Image, Wrench, DollarSign, Zap, TrendingUp, Eye, Download, Loader2
 } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
+import { getAuthenticatedImageUrl } from "../lib/api";
 
 interface VehicleDetailsModalProps {
   isOpen: boolean;
@@ -16,6 +17,8 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicleId }: VehicleDetailsModal
   const [vehicle, setVehicle] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("basic");
+  const [viewingDocument, setViewingDocument] = useState<{url: string; name: string} | null>(null);
+  const [loadingDocument, setLoadingDocument] = useState(false);
 
   useEffect(() => {
     if (isOpen && vehicleId) {
@@ -54,6 +57,34 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicleId }: VehicleDetailsModal
     if (level >= 70) return "bg-green-100";
     if (level >= 30) return "bg-yellow-100";
     return "bg-red-100";
+  };
+
+  const handleViewDocument = async (fileId: string, name: string) => {
+    if (!fileId) return;
+    
+    setLoadingDocument(true);
+    try {
+      const imageUrl = await getAuthenticatedImageUrl(`/documents/file/${fileId}`);
+      setViewingDocument({ url: imageUrl, name });
+    } catch (error) {
+      console.error("Error loading document:", error);
+      alert("Failed to load document. Please try again.");
+    } finally {
+      setLoadingDocument(false);
+    }
+  };
+
+  const handleDownloadDocument = (fileId: string, name: string) => {
+    if (!fileId) return;
+    const API_URL = import.meta.env?.VITE_API_URL || "http://localhost:8000/api/v1";
+    const url = `${API_URL}/documents/file/${fileId}`;
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = name;
+    link.target = '_blank';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   if (!isOpen) return null;
@@ -349,6 +380,13 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicleId }: VehicleDetailsModal
                     Vehicle Documents
                   </h3>
 
+                  {loadingDocument && (
+                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-3">
+                      <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+                      <span className="text-blue-800">Loading document...</span>
+                    </div>
+                  )}
+
                   {/* Document List */}
                   <div className="space-y-3">
                     <DocumentItem
@@ -356,37 +394,45 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicleId }: VehicleDetailsModal
                       fileId={vehicle.documents?.registration_certificate}
                       expiryDate={vehicle.registration_expiry}
                       isMandatory
+                      onView={handleViewDocument}
+                      onDownload={handleDownloadDocument}
                     />
                     <DocumentItem
                       name="Insurance Policy"
                       fileId={vehicle.documents?.insurance}
                       expiryDate={vehicle.insurance_expiry}
                       isMandatory
+                      onView={handleViewDocument}
+                      onDownload={handleDownloadDocument}
                     />
                     <DocumentItem
                       name="Pollution Certificate (PUC)"
                       fileId={vehicle.documents?.pollution_certificate}
                       expiryDate={vehicle.pollution_expiry}
+                      onView={handleViewDocument}
+                      onDownload={handleDownloadDocument}
                     />
                     <DocumentItem
                       name="Fitness Certificate"
                       fileId={vehicle.documents?.fitness_certificate}
                       expiryDate={vehicle.fitness_expiry}
+                      onView={handleViewDocument}
+                      onDownload={handleDownloadDocument}
                     />
                     <DocumentItem
                       name="Permit"
                       fileId={vehicle.documents?.permit}
                       expiryDate={vehicle.permit_expiry}
+                      onView={handleViewDocument}
+                      onDownload={handleDownloadDocument}
                     />
                     <DocumentItem
                       name="Road Tax Receipt"
                       fileId={vehicle.documents?.road_tax_receipt}
+                      onView={handleViewDocument}
+                      onDownload={handleDownloadDocument}
                     />
                   </div>
-
-                  <button className="mt-4 w-full py-3 border-2 border-dashed border-gray-300 text-gray-600 rounded-lg hover:border-indigo-400 hover:text-indigo-600 transition-colors">
-                    + Upload New Document
-                  </button>
                 </div>
               )}
 
@@ -397,38 +443,47 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicleId }: VehicleDetailsModal
                     Vehicle Photos
                   </h3>
 
+                  {loadingDocument && (
+                    <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-3">
+                      <Loader2 className="w-5 h-5 animate-spin text-blue-600" />
+                      <span className="text-blue-800">Loading photo...</span>
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                     <PhotoItem
                       name="Front View"
                       fileId={vehicle.photos?.front_view}
                       isMandatory
+                      onView={handleViewDocument}
                     />
                     <PhotoItem
                       name="Back View"
                       fileId={vehicle.photos?.back_view}
                       isMandatory
+                      onView={handleViewDocument}
                     />
                     <PhotoItem
                       name="Left Side"
                       fileId={vehicle.photos?.left_side}
+                      onView={handleViewDocument}
                     />
                     <PhotoItem
                       name="Right Side"
                       fileId={vehicle.photos?.right_side}
+                      onView={handleViewDocument}
                     />
                     <PhotoItem
                       name="Interior"
                       fileId={vehicle.photos?.interior}
+                      onView={handleViewDocument}
                     />
                     <PhotoItem
                       name="RC Photo"
                       fileId={vehicle.photos?.rc_photo}
+                      onView={handleViewDocument}
                     />
                   </div>
-
-                  <button className="mt-4 w-full py-3 border-2 border-dashed border-gray-300 text-gray-600 rounded-lg hover:border-indigo-400 hover:text-indigo-600 transition-colors">
-                    + Upload New Photo
-                  </button>
                 </div>
               )}
             </div>
@@ -439,12 +494,36 @@ const VehicleDetailsModal = ({ isOpen, onClose, vehicleId }: VehicleDetailsModal
           </div>
         )}
       </div>
+
+      {/* Document Viewer Modal */}
+      {viewingDocument && (
+        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-[60] p-4">
+          <div className="relative max-w-6xl w-full max-h-[90vh]">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-white text-xl font-semibold">{viewingDocument.name}</h3>
+              <button
+                onClick={() => setViewingDocument(null)}
+                className="text-white hover:text-gray-300 transition-colors"
+              >
+                <X className="w-8 h-8" />
+              </button>
+            </div>
+            <div className="bg-white rounded-lg p-4 max-h-[80vh] overflow-auto">
+              <img
+                src={viewingDocument.url}
+                alt={viewingDocument.name}
+                className="w-full h-auto"
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
 // Document Item Component
-const DocumentItem = ({ name, fileId, expiryDate, isMandatory = false }: any) => {
+const DocumentItem = ({ name, fileId, expiryDate, isMandatory = false, onView, onDownload }: any) => {
   const hasDocument = !!fileId;
   const isExpired = expiryDate && new Date(expiryDate) < new Date();
   const expiringIn = expiryDate ? Math.ceil((new Date(expiryDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)) : null;
@@ -493,9 +572,23 @@ const DocumentItem = ({ name, fileId, expiryDate, isMandatory = false }: any) =>
           )}
         </div>
         {hasDocument && (
-          <button className="text-indigo-600 hover:text-indigo-700 text-sm font-medium">
-            View
-          </button>
+          <div className="flex gap-2">
+            <button
+              onClick={() => onView(fileId, name)}
+              className="flex items-center gap-1 text-indigo-600 hover:text-indigo-700 text-sm font-medium px-3 py-1 rounded hover:bg-indigo-50 transition-colors"
+              title="View document"
+            >
+              <Eye className="w-4 h-4" />
+              View
+            </button>
+            <button
+              onClick={() => onDownload(fileId, name)}
+              className="flex items-center gap-1 text-green-600 hover:text-green-700 text-sm font-medium px-3 py-1 rounded hover:bg-green-50 transition-colors"
+              title="Download document"
+            >
+              <Download className="w-4 h-4" />
+            </button>
+          </div>
         )}
       </div>
     </div>
@@ -503,8 +596,25 @@ const DocumentItem = ({ name, fileId, expiryDate, isMandatory = false }: any) =>
 };
 
 // Photo Item Component
-const PhotoItem = ({ name, fileId, isMandatory = false }: any) => {
+const PhotoItem = ({ name, fileId, isMandatory = false, onView }: any) => {
   const hasPhoto = !!fileId;
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null);
+  const { token } = useAuthStore();
+
+  useEffect(() => {
+    if (hasPhoto && fileId) {
+      loadPhotoPreview();
+    }
+  }, [fileId]);
+
+  const loadPhotoPreview = async () => {
+    try {
+      const url = await getAuthenticatedImageUrl(`/documents/file/${fileId}`);
+      setPhotoUrl(url);
+    } catch (error) {
+      console.error("Error loading photo preview:", error);
+    }
+  };
 
   return (
     <div className={`p-4 rounded-lg border-2 text-center ${
@@ -514,9 +624,16 @@ const PhotoItem = ({ name, fileId, isMandatory = false }: any) => {
         ? "border-green-200 bg-green-50"
         : "border-gray-200 bg-gray-50"
     }`}>
-      <div className="w-full h-24 bg-gray-100 rounded-lg mb-2 flex items-center justify-center">
-        {hasPhoto ? (
-          <Image className="w-8 h-8 text-gray-400" />
+      <div className="w-full h-32 bg-gray-100 rounded-lg mb-2 flex items-center justify-center overflow-hidden">
+        {hasPhoto && photoUrl ? (
+          <img
+            src={photoUrl}
+            alt={name}
+            className="w-full h-full object-cover cursor-pointer hover:opacity-90 transition-opacity"
+            onClick={() => onView(fileId, name)}
+          />
+        ) : hasPhoto ? (
+          <Loader2 className="w-8 h-8 text-gray-400 animate-spin" />
         ) : (
           <Image className="w-8 h-8 text-gray-300" />
         )}
@@ -524,7 +641,13 @@ const PhotoItem = ({ name, fileId, isMandatory = false }: any) => {
       <p className="font-medium text-gray-900 text-sm">{name}</p>
       {isMandatory && <p className="text-xs text-red-500 mt-1">(MANDATORY)</p>}
       {hasPhoto ? (
-        <p className="text-xs text-green-600 font-medium mt-1">✓ Uploaded</p>
+        <button
+          onClick={() => onView(fileId, name)}
+          className="text-xs text-indigo-600 hover:text-indigo-700 font-medium mt-2 flex items-center gap-1 justify-center w-full"
+        >
+          <Eye className="w-3 h-3" />
+          View Full Size
+        </button>
       ) : (
         <p className="text-xs text-gray-500 mt-1">Not uploaded</p>
       )}

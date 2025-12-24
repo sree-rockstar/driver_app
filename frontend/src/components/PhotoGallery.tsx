@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Upload, Image, CheckCircle, AlertCircle, Camera } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 
@@ -42,6 +42,55 @@ const PhotoGallery = ({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [uploadedPhotos, setUploadedPhotos] = useState<Set<string>>(new Set());
+  const [fetchingPhotos, setFetchingPhotos] = useState(false);
+
+  // Fetch existing photos when modal opens
+  useEffect(() => {
+    if (isOpen && vehicleId) {
+      fetchExistingPhotos();
+    }
+  }, [isOpen, vehicleId]);
+
+  const fetchExistingPhotos = async () => {
+    setFetchingPhotos(true);
+    try {
+      const API_URL = import.meta.env?.VITE_API_URL || "http://localhost:8000/api/v1";
+      const response = await fetch(`${API_URL}/vehicles/${vehicleId}/photos`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const photos = data.photos || {};
+        
+        // Map backend field names to photo type keys
+        const fieldMapping: Record<string, string> = {
+          front_view: "front",
+          back_view: "back",
+          left_side: "left",
+          right_side: "right",
+          interior: "interior",
+          rc_photo: "rc_photo",
+          insurance_sticker: "insurance_sticker",
+        };
+
+        const uploaded = new Set<string>();
+        Object.entries(photos).forEach(([fieldName, fileData]) => {
+          if (fileData && fieldMapping[fieldName]) {
+            uploaded.add(fieldMapping[fieldName]);
+          }
+        });
+        
+        setUploadedPhotos(uploaded);
+      }
+    } catch (err) {
+      console.error("Error fetching existing photos:", err);
+    } finally {
+      setFetchingPhotos(false);
+    }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -172,6 +221,14 @@ const PhotoGallery = ({
                 <p className="text-green-900 font-semibold">{success}</p>
                 <p className="text-xs text-green-700 mt-1">Photo saved to vehicle gallery</p>
               </div>
+            </div>
+          )}
+
+          {/* Loading existing photos */}
+          {fetchingPhotos && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+              <p className="text-blue-800 text-sm">Checking existing photos...</p>
             </div>
           )}
 

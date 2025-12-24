@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import {
   Car, Battery, Zap, MapPin, Fuel, Calendar, FileText,
-  AlertCircle, TrendingUp, DollarSign, Wrench, Image
+  AlertCircle, TrendingUp, DollarSign, Wrench, Image, Eye
 } from "lucide-react";
 import { useAuthStore } from "../../store/authStore";
 import ChargingSessionLogger from "../../components/ChargingSessionLogger";
 import ExpenseTracker from "../../components/ExpenseTracker";
+import VehicleDetailsModal from "../../components/VehicleDetailsModal";
 
 interface AssignedVehicle {
   vehicle_id: string;
@@ -40,6 +41,7 @@ const MyVehicle = () => {
   const [loading, setLoading] = useState(true);
   const [showChargingLogger, setShowChargingLogger] = useState(false);
   const [showExpenseTracker, setShowExpenseTracker] = useState(false);
+  const [showVehicleDetails, setShowVehicleDetails] = useState(false);
   const [recentCharging, setRecentCharging] = useState<any[]>([]);
 
   useEffect(() => {
@@ -352,6 +354,13 @@ const MyVehicle = () => {
               expiryDate={vehicle.insurance_expiry}
             />
           </div>
+          <button
+            onClick={() => setShowVehicleDetails(true)}
+            className="mt-4 w-full flex items-center justify-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+          >
+            <Eye className="w-4 h-4" />
+            View All Documents & Photos
+          </button>
         </div>
 
         {/* Maintenance Info */}
@@ -407,6 +416,12 @@ const MyVehicle = () => {
         vehicleName={`${vehicle.make} ${vehicle.model}`}
         isElectric={vehicle.is_electric}
         onSuccess={fetchMyVehicle}
+      />
+
+      <VehicleDetailsModal
+        isOpen={showVehicleDetails}
+        onClose={() => setShowVehicleDetails(false)}
+        vehicleId={vehicle.vehicle_id}
       />
     </div>
   );

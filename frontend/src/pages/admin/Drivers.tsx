@@ -1,14 +1,16 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { adminAPI, api } from '../../lib/api'
-import { MapPin, Star, Filter, Users as UsersIcon, DollarSign, IndianRupee, Edit2, Save, X } from 'lucide-react'
+import { MapPin, Star, Filter, Users as UsersIcon, DollarSign, IndianRupee, Edit2, Save, X, FileText, CheckCircle, XCircle } from 'lucide-react'
 import { useState } from 'react'
 import { useToastStore } from '../../store/toastStore'
+import DocumentViewerModal from '../../components/DocumentViewerModal'
 
 export default function AdminDrivers() {
   const [statusFilter, setStatusFilter] = useState<string>('all')
   const [editingSalary, setEditingSalary] = useState<string | null>(null)
   const [salaryValue, setSalaryValue] = useState<string>('')
   const [workingDaysValue, setWorkingDaysValue] = useState<string>('')
+  const [viewingDocuments, setViewingDocuments] = useState<{ userId: string; userName: string } | null>(null)
   const { addToast } = useToastStore()
   const queryClient = useQueryClient()
   
@@ -217,6 +219,30 @@ export default function AdminDrivers() {
                   </div>
                 </div>
 
+                {/* Document Verification Actions */}
+                <div className="pt-3 border-t">
+                  <button
+                    onClick={() => setViewingDocuments({ userId: user.id, userName: user.full_name })}
+                    className={`w-full flex items-center justify-center gap-2 px-4 py-2 rounded-lg font-medium transition-colors ${
+                      user.is_verified
+                        ? 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200'
+                        : 'bg-orange-50 text-orange-700 hover:bg-orange-100 border border-orange-200'
+                    }`}
+                  >
+                    {user.is_verified ? (
+                      <>
+                        <CheckCircle className="w-4 h-4" />
+                        View Verified Documents
+                      </>
+                    ) : (
+                      <>
+                        <FileText className="w-4 h-4" />
+                        Review & Verify Documents
+                      </>
+                    )}
+                  </button>
+                </div>
+
                 {/* Monthly Salary Section */}
                 <div className="pt-3 border-t">
                   <div className="flex items-center justify-between mb-2">
@@ -317,6 +343,15 @@ export default function AdminDrivers() {
             </div>
           ))}
         </div>
+      )}
+
+      {/* Document Viewer Modal */}
+      {viewingDocuments && (
+        <DocumentViewerModal
+          userId={viewingDocuments.userId}
+          userName={viewingDocuments.userName}
+          onClose={() => setViewingDocuments(null)}
+        />
       )}
     </div>
   )

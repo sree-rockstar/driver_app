@@ -23,15 +23,16 @@ async def get_file(
     """
     db = get_database()
     
-    # Validate file_id
-    if not ObjectId.is_valid(file_id):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid file ID"
-        )
+    # Try to find file - support both MongoDB ObjectId and legacy UUID format
+    file_doc = None
     
-    # Find file document
-    file_doc = await db.files.find_one({"_id": ObjectId(file_id)})
+    # First, try as MongoDB ObjectId (new format)
+    if ObjectId.is_valid(file_id):
+        file_doc = await db.files.find_one({"_id": ObjectId(file_id)})
+    
+    # If not found, try as legacy file_id (UUID string format)
+    if not file_doc:
+        file_doc = await db.files.find_one({"file_id": file_id})
     
     if not file_doc:
         raise HTTPException(
@@ -41,9 +42,39 @@ async def get_file(
     
     # Get current user ID
     current_user_id = str(current_user.get("_id"))
+    user_role = current_user.get("role")
     
     # Check if user has permission to access this file
-    if file_doc.get("user_id") != current_user_id and current_user.get("role") != "admin":
+    # Users can access their own files
+    # Admins and super_admins can access all files (including vehicle files)
+    # Drivers can access files for their assigned vehicles
+    is_user_file = file_doc.get("user_id") == current_user_id
+    is_vehicle_file = file_doc.get("vehicle_id") is not None
+    is_admin = user_role in ["admin", "super_admin", "manager"]
+    
+    # Check if user has access
+    if is_user_file or is_admin:
+        # User owns the file or user is admin - allow access
+        pass
+    elif is_vehicle_file:
+        # This is a vehicle file, check if driver has access to this vehicle
+        vehicle_id = file_doc.get("vehicle_id")
+        if vehicle_id:
+            vehicle = await db.vehicles.find_one({"vehicle_id": vehicle_id})
+            if vehicle and vehicle.get("current_driver_id") == current_user_id:
+                # Driver is assigned to this vehicle - allow access
+                pass
+            else:
+                raise HTTPException(
+                    status_code=status.HTTP_403_FORBIDDEN,
+                    detail="You don't have permission to access this file"
+                )
+        else:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="You don't have permission to access this file"
+            )
+    else:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="You don't have permission to access this file"
@@ -84,15 +115,16 @@ async def get_file_info(
     """Get file metadata by ID"""
     db = get_database()
     
-    # Validate file_id
-    if not ObjectId.is_valid(file_id):
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Invalid file ID"
-        )
+    # Try to find file - support both MongoDB ObjectId and legacy UUID format
+    file_doc = None
     
-    # Find file document
-    file_doc = await db.files.find_one({"_id": ObjectId(file_id)})
+    # First, try as MongoDB ObjectId (new format)
+    if ObjectId.is_valid(file_id):
+        file_doc = await db.files.find_one({"_id": ObjectId(file_id)})
+    
+    # If not found, try as legacy file_id (UUID string format)
+    if not file_doc:
+        file_doc = await db.files.find_one({"file_id": file_id})
     
     if not file_doc:
         raise HTTPException(

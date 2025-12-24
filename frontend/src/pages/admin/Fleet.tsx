@@ -410,6 +410,9 @@ const Fleet = () => {
                     Odometer
                   </th>
                   <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                    Documents
+                  </th>
+                  <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                     Actions
                   </th>
                 </tr>
@@ -509,6 +512,40 @@ const Fleet = () => {
                         <span className="text-sm text-gray-900">
                           {vehicle.odometer_reading.toLocaleString()} km
                         </span>
+                      </div>
+                    </td>
+
+                    {/* Documents Status */}
+                    <td className="px-6 py-4">
+                      <div className="flex flex-col gap-1">
+                        {/* RC Document */}
+                        <div className="flex items-center gap-2">
+                          {vehicle.documents?.registration_certificate ? (
+                            <>
+                              <CheckCircle className="w-4 h-4 text-green-600" />
+                              <span className="text-xs text-green-700 font-medium">RC</span>
+                            </>
+                          ) : (
+                            <>
+                              <AlertCircle className="w-4 h-4 text-red-400" />
+                              <span className="text-xs text-red-600">RC</span>
+                            </>
+                          )}
+                        </div>
+                        {/* Insurance */}
+                        <div className="flex items-center gap-2">
+                          {vehicle.documents?.insurance ? (
+                            <>
+                              <CheckCircle className="w-4 h-4 text-green-600" />
+                              <span className="text-xs text-green-700 font-medium">Insurance</span>
+                            </>
+                          ) : (
+                            <>
+                              <AlertCircle className="w-4 h-4 text-red-400" />
+                              <span className="text-xs text-red-600">Insurance</span>
+                            </>
+                          )}
+                        </div>
                       </div>
                     </td>
 

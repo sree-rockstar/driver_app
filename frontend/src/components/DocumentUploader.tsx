@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { X, Upload, FileText, CheckCircle, AlertCircle, Calendar } from "lucide-react";
 import { useAuthStore } from "../store/authStore";
 
@@ -41,6 +41,54 @@ const DocumentUploader = ({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
   const [uploadedDocs, setUploadedDocs] = useState<Set<string>>(new Set());
+  const [fetchingDocs, setFetchingDocs] = useState(false);
+
+  // Fetch existing documents when modal opens
+  useEffect(() => {
+    if (isOpen && vehicleId) {
+      fetchExistingDocuments();
+    }
+  }, [isOpen, vehicleId]);
+
+  const fetchExistingDocuments = async () => {
+    setFetchingDocs(true);
+    try {
+      const API_URL = import.meta.env?.VITE_API_URL || "http://localhost:8000/api/v1";
+      const response = await fetch(`${API_URL}/vehicles/${vehicleId}/documents`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const documents = data.documents || {};
+        
+        // Map backend field names to document type keys
+        const fieldMapping: Record<string, string> = {
+          registration_certificate: "rc",
+          insurance: "insurance",
+          pollution_certificate: "pollution",
+          fitness_certificate: "fitness",
+          permit: "permit",
+          road_tax_receipt: "road_tax",
+        };
+
+        const uploaded = new Set<string>();
+        Object.entries(documents).forEach(([fieldName, fileData]) => {
+          if (fileData && fieldMapping[fieldName]) {
+            uploaded.add(fieldMapping[fieldName]);
+          }
+        });
+        
+        setUploadedDocs(uploaded);
+      }
+    } catch (err) {
+      console.error("Error fetching existing documents:", err);
+    } finally {
+      setFetchingDocs(false);
+    }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -170,6 +218,14 @@ const DocumentUploader = ({
                 <p className="text-green-900 font-semibold">{success}</p>
                 <p className="text-xs text-green-700 mt-1">Document saved and vehicle updated</p>
               </div>
+            </div>
+          )}
+
+          {/* Loading existing documents */}
+          {fetchingDocs && (
+            <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg flex items-center gap-2">
+              <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+              <p className="text-blue-800 text-sm">Checking existing documents...</p>
             </div>
           )}
 

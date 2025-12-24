@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile
 from fastapi.responses import FileResponse
 from typing import List, Optional
 from datetime import datetime, timedelta
+from bson import ObjectId
 
 from app.models.vehicle import (
     Vehicle, VehicleCreate, VehicleUpdate, VehicleStatus, FuelType
@@ -2236,15 +2237,14 @@ async def upload_vehicle_document(
     upload_dir = Path(f"uploads/vehicles/{vehicle_id}/documents")
     upload_dir.mkdir(parents=True, exist_ok=True)
     
-    file_id = str(uuid.uuid4())
-    file_path = upload_dir / f"{document_type}_{file_id}.{file_ext}"
+    unique_id = str(uuid.uuid4())
+    file_path = upload_dir / f"{document_type}_{unique_id}.{file_ext}"
     
     with open(file_path, "wb") as f:
         f.write(file_content)
     
     # Create file record
     file_doc = {
-        "file_id": file_id,
         "vehicle_id": vehicle_id,
         "file_type": f"vehicle_{document_type}",
         "document_type": document_type,
@@ -2257,7 +2257,9 @@ async def upload_vehicle_document(
         "status": "active"
     }
     
-    await db.files.insert_one(file_doc)
+    # Insert and get the MongoDB _id
+    result = await db.files.insert_one(file_doc)
+    file_id = str(result.inserted_id)  # Use MongoDB's _id
     
     # Update vehicle documents
     document_field_map = {
@@ -2271,7 +2273,7 @@ async def upload_vehicle_document(
     
     field_name = document_field_map.get(document_type)
     update_data = {
-        f"documents.{field_name}": file_id,
+        f"documents.{field_name}": file_id,  # Store MongoDB _id
         "updated_at": datetime.utcnow()
     }
     
@@ -2377,15 +2379,14 @@ async def upload_vehicle_photo(
     upload_dir = Path(f"uploads/vehicles/{vehicle_id}/photos")
     upload_dir.mkdir(parents=True, exist_ok=True)
     
-    file_id = str(uuid.uuid4())
-    file_path = upload_dir / f"{photo_type}_{file_id}.{file_ext}"
+    unique_id = str(uuid.uuid4())
+    file_path = upload_dir / f"{photo_type}_{unique_id}.{file_ext}"
     
     with open(file_path, "wb") as f:
         f.write(file_content)
     
     # Create file record
     file_doc = {
-        "file_id": file_id,
         "vehicle_id": vehicle_id,
         "file_type": f"vehicle_photo_{photo_type}",
         "photo_type": photo_type,
@@ -2398,7 +2399,9 @@ async def upload_vehicle_photo(
         "status": "active"
     }
     
-    await db.files.insert_one(file_doc)
+    # Insert and get the MongoDB _id
+    result = await db.files.insert_one(file_doc)
+    file_id = str(result.inserted_id)  # Use MongoDB's _id
     
     # Update vehicle photos
     photo_field_map = {
@@ -2417,7 +2420,7 @@ async def upload_vehicle_photo(
         {"vehicle_id": vehicle_id},
         {
             "$set": {
-                f"photos.{field_name}": file_id,
+                f"photos.{field_name}": file_id,  # Store MongoDB _id
                 "updated_at": datetime.utcnow()
             }
         }
@@ -2457,7 +2460,13 @@ async def get_vehicle_documents(
     document_details = {}
     for doc_type, file_id in documents.items():
         if file_id:
-            file_record = await db.files.find_one({"file_id": file_id})
+            # Try MongoDB ObjectId first (new format)
+            if ObjectId.is_valid(file_id):
+                file_record = await db.files.find_one({"_id": ObjectId(file_id)})
+            else:
+                # Try legacy file_id field (UUID format)
+                file_record = await db.files.find_one({"file_id": file_id})
+            
             if file_record:
                 file_record["_id"] = str(file_record["_id"])
                 document_details[doc_type] = file_record
@@ -2519,7 +2528,13 @@ async def get_vehicle_photos(
     photo_details = {}
     for photo_type, file_id in photos.items():
         if file_id:
-            file_record = await db.files.find_one({"file_id": file_id})
+            # Try MongoDB ObjectId first (new format)
+            if ObjectId.is_valid(file_id):
+                file_record = await db.files.find_one({"_id": ObjectId(file_id)})
+            else:
+                # Try legacy file_id field (UUID format)
+                file_record = await db.files.find_one({"file_id": file_id})
+            
             if file_record:
                 file_record["_id"] = str(file_record["_id"])
                 photo_details[photo_type] = file_record

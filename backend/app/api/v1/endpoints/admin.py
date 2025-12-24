@@ -1,11 +1,24 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from typing import List
+from typing import List, Optional
 from app.api.deps import get_current_admin_user
 from app.db.mongodb import get_database
 from app.models.user import User, UserRole
+from app.core.security import get_password_hash
 from bson import ObjectId
+from datetime import datetime
+from pydantic import BaseModel
 
 router = APIRouter()
+
+
+class AdminUserCreate(BaseModel):
+    mobile_number: str
+    full_name: str
+    email: Optional[str] = None
+    role: str = "driver"  # Accept any role as string
+    driving_license_number: Optional[str] = None
+    aadhar_number: Optional[str] = None
+    status: str = "pending_approval"
 
 
 @router.get("/users", response_model=List[User])
@@ -24,6 +37,72 @@ async def list_all_users(
         user["id"] = str(user.pop("_id"))
     
     return [User(**user) for user in users]
+
+
+@router.post("/users", response_model=User, status_code=status.HTTP_201_CREATED)
+async def create_user(
+    user_data: AdminUserCreate,
+    current_user: dict = Depends(get_current_admin_user)
+):
+    """Admin: Create a new user"""
+    db = get_database()
+    
+    # Validate role
+    valid_roles = [
+        "super_admin", "admin", "manager", "operator", "accountant",
+        "hr_staff", "support_staff", "driver", "spare_driver", "user"
+    ]
+    if user_data.role not in valid_roles:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid role. Must be one of: {', '.join(valid_roles)}"
+        )
+    
+    # Validate mobile number format
+    if not user_data.mobile_number.isdigit() or len(user_data.mobile_number) != 10:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Mobile number must be exactly 10 digits"
+        )
+    
+    # Check if user already exists
+    existing_user = await db.users.find_one({"mobile_number": user_data.mobile_number})
+    if existing_user:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Mobile number already registered"
+        )
+    
+    # Verify status exists
+    status_doc = await db.user_statuses.find_one({"code": user_data.status, "is_active": True})
+    if not status_doc:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Invalid status code: {user_data.status}"
+        )
+    
+    # Create new user
+    user_dict = {
+        "mobile_number": user_data.mobile_number,
+        "full_name": user_data.full_name,
+        "email": user_data.email,
+        "driving_license_number": user_data.driving_license_number,
+        "aadhar_number": user_data.aadhar_number,
+        "hashed_password": None,  # Admin-created users don't have password initially
+        "role": user_data.role,
+        "status": user_data.status,
+        "is_verified": False,
+        "has_mpin": False,
+        "documents": None,
+        "created_at": datetime.utcnow(),
+        "updated_at": datetime.utcnow(),
+    }
+    
+    result = await db.users.insert_one(user_dict)
+    created_user = await db.users.find_one({"_id": result.inserted_id})
+    
+    created_user["id"] = str(created_user.pop("_id"))
+    return User(**created_user)
 
 
 @router.get("/users/{user_id}", response_model=User)
@@ -215,14 +294,120 @@ async def update_driver_salary(
     }
 
 
+@router.put("/users/{user_id}/verify")
+async def verify_driver(
+    user_id: str,
+    is_verified: bool,
+    verification_notes: Optional[str] = None,
+    current_user: dict = Depends(get_current_admin_user)
+):
+    """Admin: Verify or reject driver documents"""
+    db = get_database()
+    
+    # Check if user exists
+    user = await db.users.find_one({"_id": ObjectId(user_id)})
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    # Update verification status
+    update_data = {
+        "is_verified": is_verified,
+        "updated_at": datetime.utcnow()
+    }
+    
+    if verification_notes:
+        update_data["verification_notes"] = verification_notes
+    
+    # If verifying (approving), also update status to active if not already
+    if is_verified and user.get("status") in ["registered", "pending_approval"]:
+        update_data["status"] = "active"
+    
+    result = await db.users.update_one(
+        {"_id": ObjectId(user_id)},
+        {"$set": update_data}
+    )
+    
+    if result.matched_count == 0:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    updated_user = await db.users.find_one({"_id": ObjectId(user_id)})
+    updated_user["id"] = str(updated_user.pop("_id"))
+    
+    return {
+        "message": f"Driver {'verified' if is_verified else 'verification rejected'} successfully",
+        "user": User(**updated_user)
+    }
+
+
+@router.get("/users/{user_id}/documents")
+async def get_user_documents(
+    user_id: str,
+    current_user: dict = Depends(get_current_admin_user)
+):
+    """Admin: Get user's uploaded documents"""
+    db = get_database()
+    
+    # Check if user exists
+    user = await db.users.find_one({"_id": ObjectId(user_id)})
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+    
+    documents = user.get("documents", {})
+    
+    # Get file details for each document
+    document_details = {}
+    for doc_field, file_id in documents.items():
+        if file_id:
+            # Try MongoDB ObjectId first (new format)
+            if ObjectId.is_valid(file_id):
+                file_record = await db.files.find_one({"_id": ObjectId(file_id)})
+            else:
+                # Try legacy file_id field (UUID format) - shouldn't happen for user files
+                file_record = await db.files.find_one({"file_id": file_id})
+            
+            if file_record:
+                file_record["_id"] = str(file_record["_id"])
+                document_details[doc_field] = {
+                    "file_id": str(file_record["_id"]),
+                    "file_type": file_record.get("file_type"),
+                    "filename": file_record.get("filename"),
+                    "uploaded_at": file_record.get("uploaded_at"),
+                    "file_path": file_record.get("file_path")
+                }
+    
+    return {
+        "user_id": user_id,
+        "full_name": user.get("full_name"),
+        "mobile_number": user.get("mobile_number"),
+        "driving_license_number": user.get("driving_license_number"),
+        "aadhar_number": user.get("aadhar_number"),
+        "is_verified": user.get("is_verified", False),
+        "verification_notes": user.get("verification_notes"),
+        "documents": document_details
+    }
+
+
 @router.get("/stats")
 async def get_stats(current_user: dict = Depends(get_current_admin_user)):
     """Admin: Get application statistics"""
     db = get_database()
     
     total_users = await db.users.count_documents({})
-    total_drivers = await db.drivers.count_documents({})
-    active_users = await db.users.count_documents({"is_active": True})
+    # Count users with driver or spare_driver role
+    total_drivers = await db.users.count_documents({
+        "role": {"$in": ["driver", "spare_driver"]}
+    })
+    # Count active users (users with active status)
+    active_users = await db.users.count_documents({"status": "active"})
     
     return {
         "total_users": total_users,
