@@ -19,13 +19,23 @@ Path("uploads").mkdir(exist_ok=True)
 # This ensures only authorized users can access their documents
 
 # CORS middleware
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=settings.ALLOWED_ORIGINS,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# Allow all origins in DEBUG mode, specific origins in production
+if settings.DEBUG:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origin_regex=r"https?://.*",  # Allow any IP/domain
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+else:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.ALLOWED_ORIGINS,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
 
 
 @app.on_event("startup")
