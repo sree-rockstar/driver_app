@@ -68,6 +68,6 @@ jobs:
         uses: azure/webapps-deploy@v3
         id: deploy-to-webapp
         with:
-          app-name: "prt-backend-g9abh2fjdngzcpdc"
+          app-name: "prt-backend"
           slot-name: "Production"
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE_633798D9164A48DAA7DD2DFE59CE46D7 }}
