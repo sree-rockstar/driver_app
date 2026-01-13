@@ -19,8 +19,8 @@ Path("uploads").mkdir(exist_ok=True)
 # This ensures only authorized users can access their documents
 
 # CORS middleware
-# Allow all origins in DEBUG mode, specific origins in production
-if settings.DEBUG:
+# Allow all origins in DEBUG mode or if ALLOWED_ORIGINS is "*"
+if settings.DEBUG or (isinstance(settings.ALLOWED_ORIGINS, list) and "*" in settings.ALLOWED_ORIGINS) or settings.ALLOWED_ORIGINS == "*":
     app.add_middleware(
         CORSMiddleware,
         allow_origin_regex=r"https?://.*",  # Allow any IP/domain

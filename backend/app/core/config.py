@@ -24,6 +24,9 @@ class Settings(BaseSettings):
     @classmethod
     def parse_cors_origins(cls, v):
         if isinstance(v, str):
+            # If ALLOWED_ORIGINS is "*", keep it as a single-item list for easier checking
+            if v.strip() == "*":
+                return ["*"]
             return [origin.strip() for origin in v.split(',')]
         return v
 
