@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test File Display</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+        }
+        .container {
+            border: 1px solid #ddd;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        input, button {
+            padding: 10px;
+            margin: 10px 0;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        #imageContainer {
+            margin-top: 20px;
+            text-align: center;
+        }
+        #imageContainer img {
+            max-width: 100%;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+        }
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+        .success {
+            color: green;
+            margin-top: 10px;
+        }
+        .info {
+            background: #e7f3ff;
+            padding: 15px;
+            border-left: 4px solid #2196F3;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test File Display System</h1>
+        
+        <div class="info">
+            <strong>Instructions:</strong><br>
+            1. Login to your app first<br>
+            2. Copy your auth token from browser storage (localStorage.token)<br>
+            3. Paste it below along with the file ID<br>
+            4. Click "Load Image"
+        </div>
+
+        <label for="token">Auth Token:</label>
+        <input type="text" id="token" placeholder="Paste your JWT token here">
+
+        <label for="fileId">File ID:</label>
+        <input type="text" id="fileId" value="69497def6dea4a95d288d208" placeholder="File ID from database">
+
+        <button onclick="loadImage()">Load Image</button>
+
+        <div id="message"></div>
+        <div id="imageContainer"></div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8000';
+
+        async function loadImage() {
+            const token = document.getElementById('token').value.trim();
+            const fileId = document.getElementById('fileId').value.trim();
+            const messageDiv = document.getElementById('message');
+            const imageContainer = document.getElementById('imageContainer');
+
+            // Clear previous results
+            messageDiv.innerHTML = '';
+            imageContainer.innerHTML = '';
+
+            // Validate inputs
+            if (!token) {
+                messageDiv.innerHTML = '<p class="error">Please enter your auth token</p>';
+                return;
+            }
+
+            if (!fileId) {
+                messageDiv.innerHTML = '<p class="error">Please enter a file ID</p>';
+                return;
+            }
+
+            messageDiv.innerHTML = '<p>Loading image...</p>';
+
+            try {
+                // Fetch the image with authentication
+                const response = await fetch(`${API_URL}/api/v1/documents/file/${fileId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                // Get the blob
+                const blob = await response.blob();
+                const blobUrl = URL.createObjectURL(blob);
+
+                // Get file info
+                const contentType = response.headers.get('Content-Type');
+                const contentLength = response.headers.get('Content-Length');
+                const fileSize = contentLength ? (parseInt(contentLength) / 1024 / 1024).toFixed(2) : 'unknown';
+
+                // Display success message
+                messageDiv.innerHTML = `
+                    <p class="success">✓ Image loaded successfully!</p>
+                    <p><strong>Type:</strong> ${contentType}</p>
+                    <p><strong>Size:</strong> ${fileSize} MB</p>
+                `;
+
+                // Display the image
+                imageContainer.innerHTML = `
+                    <img src="${blobUrl}" alt="Uploaded Document">
+                    <p><small>Blob URL: ${blobUrl}</small></p>
+                `;
+
+            } catch (error) {
+                messageDiv.innerHTML = `<p class="error">Error: ${error.message}</p>`;
+                console.error('Error loading image:', error);
+            }
+        }
+
+        // Auto-fill token from localStorage if available
+        window.addEventListener('load', () => {
+            const savedToken = localStorage.getItem('token');
+            if (savedToken) {
+                document.getElementById('token').value = savedToken;
+            }
+        });
+    </script>
+</body>
+</html>
+

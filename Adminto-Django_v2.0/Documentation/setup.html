@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <title>Setup | Adminto - Bootstrap 5 Admin Dashboard Template</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta content="A fully featured admin theme which can be used to build CRM, CMS, etc." name="description" />
+    <meta content="Coderthemes" name="author" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <!-- App favicon -->
+    <link rel="shortcut icon" href="assets/images/favicon.ico">
+
+    <!-- App css -->
+    <link href="assets/css/bootstrap.min.css" rel="stylesheet" type="text/css" id="bs-default-stylesheet" />
+    <link href="assets/css/app.min.css" rel="stylesheet" type="text/css" id="app-default-stylesheet" />
+
+    <!-- icons -->
+    <link href="assets/css/icons.min.css" rel="stylesheet" type="text/css" />
+</head>
+
+<body class="loading">
+
+    <!-- Begin page -->
+    <div id="wrapper">
+
+        <!-- ========== Left Sidebar Start ========== -->
+        <div class="left-side-menu">
+
+            <!-- LOGO -->
+            <div class="logo-box">
+
+                <a href="index.html" class="logo logo-light">
+                    <span class="logo-sm">
+                        <img src="assets/images/logo-sm.png" alt="" height="24">
+                    </span>
+                    <span class="logo-lg">
+                        <img src="assets/images/logo-light.png" alt="" height="20">
+                    </span>
+                </a>
+            </div>
+
+            <div class="h-100" data-simplebar>
+
+                <!--- Sidemenu -->
+                <div id="sidebar-menu">
+
+                    <ul id="side-menu">
+
+                        <li class="menu-title">Docs</li>
+
+                        <li>
+                            <a href="index.html">
+                                <i class="ri-honour-line"></i>
+                                <span> Introduction </span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="setup.html">
+                                <i class="ri-tools-fill"></i>
+                                <span> Setup </span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="customization.html">
+                                <i class="ri-paint-line"></i>
+                                <span> Customization </span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="plugins-uses.html">
+                                <i class="ri-artboard-2-line"></i>
+                                <span> How to use plugins </span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="rtl.html">
+                                <i class="ri-global-line"></i>
+                                <span> RTL Version </span>
+                            </a>
+                        </li>
+
+                        <li>
+                            <a href="changelog.html">
+                                <i class="ri-book-open-line"></i>
+                                <span> Changelog </span>
+                            </a>
+                        </li>
+                    </ul>
+
+                </div>
+                <!-- End Sidebar -->
+
+                <div class="clearfix"></div>
+
+            </div>
+            <!-- Sidebar -left -->
+
+        </div>
+        <!-- Left Sidebar End -->
+
+        <!-- ============================================================== -->
+        <!-- Start Page Content here -->
+        <!-- ============================================================== -->
+
+        <div class="content-page">
+            <div class="content">
+
+                <!-- Topbar Start -->
+                <div class="navbar-custom">
+                    <div class="container-fluid">
+
+                        <ul class="list-unstyled topnav-menu float-right mb-0">
+
+                            <li>
+                                <a class="nav-link"
+                                    href="https://themeforest.net/item/adminto-django-admin-dashboard-template/46944703/support"
+                                    target="_blank">
+                                    <i class="ri-customer-service-line font-16 align-middle mr-1"></i> <span
+                                        class="align-middle">Support</span>
+                                </a>
+                            </li>
+
+                            <li>
+                                <a class="nav-link" href="https://1.envato.market/adminto-dj" target="_blank">
+                                    <i class="ri-shopping-cart-2-line font-16 align-middle mr-1"></i> <span
+                                        class="align-middle">Buy Now</span>
+                                </a>
+                            </li>
+
+                            <li class="d-none d-sm-inline-block">
+                                <div class="nav-link">
+                                    <span class="badge badge-danger font-14">v2.0</span>
+                                </div>
+                            </li>
+
+                        </ul>
+
+                        <!-- LOGO -->
+                        <div class="logo-box">
+
+                            <a href="index.html" class="logo logo-light">
+                                <span class="logo-sm">
+                                    <img src="assets/images/logo-sm.png" alt="" height="24">
+                                </span>
+                                <span class="logo-lg">
+                                    <img src="assets/images/logo-light.png" alt="" height="20">
+                                </span>
+                            </a>
+                        </div>
+
+                        <ul class="list-unstyled topnav-menu topnav-menu-left m-0">
+                            <li>
+                                <button class="button-menu-mobile waves-effect waves-light">
+                                    <i class="fe-menu"></i>
+                                </button>
+                            </li>
+                        </ul>
+                        <div class="clearfix"></div>
+                    </div>
+                </div>
+                <!-- end Topbar -->
+
+                <!-- Start Content-->
+                <div class="container-fluid">
+
+                    <div class="card">
+                        <div class="card-body">
+
+                            <h3 class="mt-0 mb-3 font-22">Setup</h3>
+
+                            <div class="alert alert-info" role="alert">
+                                <p class="mb-0">
+                                    <strong>Note:</strong> You could use the ready-to-use (pre-compiled) demos available
+                                    in the <code>dist</code> folder, if you are not looking for any
+                                    customization. In that case, you can skip below setup steps.
+                                </p>
+                            </div>
+
+                            <p class="mt-3">We are using <a href="https://gulpjs.com/" target="_blank">gulp</a>
+                                which allows to have complete automatation for
+                                build flow. In case if you don't know - Gulp is a toolkit for automating
+                                painful or time-consuming tasks in development workflow, so you can stop
+                                messing around and build something. You can read it more about it <a
+                                    href="https://gulpjs.com/" target="_blank">here</a>. Please follow below
+                                steps to install and setup all prerequisites:</p>
+
+                            <h4 class="mt-4">Prerequisites</h4>
+
+                            <p>Please follow below steps to install and setup all prerequisites:</p>
+
+                            <ul>
+                                <li>
+                                    <h5>Node.js</h5>
+                                    <p class="mb-2">In order to use build tools you will need to download
+                                        and install Node.js. If you do not have Node.js installed already,
+                                        you can get it by downloading the package installer from the
+                                        official website. Please download the stable version of Node.js
+                                        (LTS).</p><a href="https://nodejs.org/" target="_blank">Download
+                                        Node.js</a>
+                                </li>
+                                <li class="pt-2">
+                                    <h5>Gulp &amp; Gulp CLI</h5>
+                                    <p>Make sure to have the <a href="https://gulpjs.com/" target="_blank">Gulp</a>
+                                        installed &amp; running in your
+                                        computer. If you already have installed gulp on your computer, you
+                                        can skip this step. In order to install, just run command <code>npm
+                                                install -g gulp@4.0.1</code> from your terminal.</p>
+                                </li>
+                                <li>
+                                    <h5>Python</h5>
+                                    <p> Make sure to have the <a class="text-blue-500 font-semibold"
+                                            href="https://www.python.org/downloads/" target="_blank">Python</a>
+                                        installed &amp; running in your computer. If you already have installed Python
+                                        on your computer, you can skip this step. Please use <strong>Python version
+                                            3</strong> or if
+                                        you are using <strong>Python version 2</strong> then make sure to run all the
+                                        below
+                                        commands with
+                                        <code>python</code> instead of
+                                        <code>python3</code>.
+                                    </p>
+                                    <a href="https://www.python.org/downloads/" target="_blank">Install Git</a>
+                                </li>
+                                <li>
+                                    <h5>For Windows</h5>
+                                    <ul>
+                                        <li>Download python from Microsoft store</li>
+                                        <li>Select the Python's version to download.</li>
+                                        <li>Click on the Install Now</li>
+                                        <li>Installation in Process</li>
+                                    </ul>
+                                </li>
+                                <li>
+                                    <h5>For Linux and macOS</h5>
+                                    <ul>
+                                        <li><code>sudo apt update</code></li>
+                                        <li><code>sudo apt install python3</code></li>
+                                    </ul>
+                                </li>
+
+                                <li>
+                                    <h5>Virtualenv</h5>
+                                    <p class="">Make sure to have the
+                                        <code>virtualenv</code> installed globally &amp;
+                                        running on your computer. If you already have installed on your computer,
+                                        you can skip this step.
+                                    </p>
+                                    <ul>
+                                        <li>
+                                            Virtualenv installation command for <strong>Linux</strong> &amp;
+                                            <strong>macOS</strong>
+                                            <br>
+                                            <code>python3 -m pip install --user virtualenv</code><br>
+                                        </li>
+                                        <li>
+                                            Virtualenv installation command for <strong>Windows</strong><br>
+                                            <code>py -m pip install --user virtualenv</code>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
+
+                            <h4 class="mt-4">Installation</h4>
+                            <p> To install all the required dependencies for the template,
+                                open your terminal, navigate to the folder where you have
+                                the Adminto files, and run the command
+                                <code>yarn install</code>. This will install all necessary
+                                dependencies in the <code>node_modules</code> folder. Once
+                                the installation is complete, you are ready to run Adminto
+                                for the first time.
+                            </p>
+                            <p class="mt-1">You can run the following commands to run project locally or
+                                build for production use:</p>
+
+                            <p class="mb-2">
+                            <h5>1. Bun </h5>(Recommended for
+                            mac and Linux OS)</p>
+                            <p class="mb-2">If you don't have <strong>bun</strong> installed on your
+                                PC, use the <code>npm i -g bun</code> or <code>sudo npm i -g bun </code> to install</p>
+                            <div>
+                                <table class="table table-bordered m-0">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:20%"><i class="ti-file"></i> Command</th>
+                                            <th>Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><code>bun i</code></td>
+                                            <td>It bundles assets and runs the project locally, starts the development
+                                                server.</a>.
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td><code>bun dev</code></td>
+                                            <td>It compiles the source assets including scss and bundles into production
+                                                ready use.</td>
+                                        </tr>
+
+                                        <tr>
+                                            <td><code>bun run build</code></td>
+                                            <td>It bundles assets into the <code>static</code> directory. Your app
+                                                is now ready to be deployed. <br />
+                                                We recommend to run this command before starting django server.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <p class="mb-1">
+                            <h5>2. Yarn </h5>
+                            <p class="mb-2">If you don't have <strong>yarn</strong> installed on your
+                                PC, use the next command <code>npm i -g yarn</code> or
+                                <code>sudo npm i -g yarn </code>
+                            </p>
+                            <div>
+                                <table class="table table-bordered m-0">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:20%"><i class="ti-file"></i> Command</th>
+                                            <th>Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><code>yarn</code></td>
+                                            <td>It bundles assets and runs the project locally, starts the development
+                                                server.</a>.
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td><code>yarn dev</code></td>
+                                            <td>It compiles the source assets including scss and bundles into production
+                                                ready use.</td>
+                                        </tr>
+
+                                        <tr>
+                                            <td><code>yarn run build</code></td>
+                                            <td>It bundles assets into the <code>static</code> directory. Your app
+                                                is now ready to be deployed. <br />
+                                                We recommend to run this command before starting django server.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <p class="mb-1">
+                            <h5>3. NPM </h5>
+                            <p class="mb-2"><strong>npm</strong> comes preinstalled when you install
+                                Nodejs </p>
+                            <div>
+                                <table class="table table-bordered m-0">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:20%"><i class="ti-file"></i> Command</th>
+                                            <th>Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><code>npm i </code> OR <code> &nbsp;npm i --force</code></td>
+                                            <td>It bundles assets and runs the project locally, starts the development
+                                                server.</a>.
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td><code>npm dev</code></td>
+                                            <td>It compiles the source assets including scss and bundles into production
+                                                ready use.</td>
+                                        </tr>
+
+                                        <tr>
+                                            <td><code>npm run build</code></td>
+                                            <td>It bundles assets into the <code>static</code> directory. Your app
+                                                is now ready to be deployed. <br />
+                                                We recommend to run this command before starting django server.</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <p class="my-4">To spin up the <strong>Django</strong> server, follow the
+                                below mentioned
+                                steps:</p>
+                            <div class="shadow-sm overflow-hidden rounded-md mt-3">
+
+                                <table class="table table-bordered m-0">
+                                    <thead>
+                                        <tr>
+                                            <th style="width:20%"><i class="ti-file"></i> Command</th>
+                                            <th>Description</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td><code>python3 -m venv environment_name</code><br>
+                                            <td>Create Virtual Environment on <strong>Linux</strong> &
+                                                <strong>macOS</strong>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td><code>python -m venv environment_name</code></td>
+                                            <td>Create Virtual Environment on <strong>Windows OS</strong></td>
+                                        </tr>
+
+                                        <tr>
+                                            <td><code>source environment_name/bin/activate</code></td>
+                                            <td> Activate Environment on <strong>Linux</strong> & <strong>macOS</strong>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td><code>environment_name/Scripts/activate</code></td>
+                                            <td> Activate Environment on <strong>Windows OS</strong></td>
+                                        </tr>
+
+                                        <tr>
+                                            <td><code>pip install -r requirements/local.txt</code></td>
+                                            <td>This would install all the required python dependencies. </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td><code>python3 manage.py migrate</code></td>
+                                            <td>Run the migration to sync the database on <strong>Linux</strong> &
+                                                <strong>macOS</strong>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td><code>python manage.py migrate</code></td>
+                                            <td>Run the migration to sync the database on <strong>Windows OS</strong>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td><code>python3 manage.py runserver</code></td>
+                                            <td>Starts the local server on localhost:8000 on <strong>Linux</strong> &
+                                                <strong>macOS</strong>
+                                            </td>
+                                        </tr>
+
+                                        <tr>
+                                            <td><code>python manage.py runserver</code></td>
+                                            <td>Starts the local server on localhost:8000 on <strong>Windows OS</strong>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div> <!-- container -->
+
+            </div> <!-- content -->
+
+            <!-- Footer Start -->
+            <footer class="footer">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <script>document.write(new Date().getFullYear())</script> &copy; Adminto theme by <a
+                                href="https://coderthemes.com/" target="_blank">Coderthemes</a>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="text-md-right footer-links d-none d-sm-block">
+                                <a href="https://coderthemes.com/">About Us</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </footer>
+            <!-- end Footer -->
+
+        </div>
+
+        <!-- ============================================================== -->
+        <!-- End Page content -->
+        <!-- ============================================================== -->
+
+
+    </div>
+    <!-- END wrapper -->
+
+    <!-- Vendor js -->
+    <script src="assets/js/vendor.min.js"></script>
+
+    <!-- App js -->
+    <script src="assets/js/app.min.js"></script>
+
+</body>
+
+</html>
